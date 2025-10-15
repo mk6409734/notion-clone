@@ -29,6 +29,16 @@ export async function POST(req: NextRequest) {
 
   const { room } = await req.json();
 
+  if (!adminDb) {
+    return NextResponse.json(
+      {
+        message:
+          "Firebase Admin not initialized. Please check your environment variables.",
+      },
+      { status: 500 }
+    );
+  }
+
   const session = liveblocks.prepareSession(sessionClaims.email, {
     userInfo: {
       name:
@@ -46,12 +56,12 @@ export async function POST(req: NextRequest) {
     .where("userId", "==", sessionClaims.email)
     .get();
 
-  const userInRoom = usersInRoom.docs.find((doc) => doc.id === room);
+  const userInRoom = usersInRoom.docs.find((doc: any) => doc.id === room);
 
   if (userInRoom?.exists) {
     session.allow(room, session.FULL_ACCESS);
     const { body, status } = await session.authorize();
-    
+
     return new Response(body, { status });
   } else {
     return NextResponse.json(

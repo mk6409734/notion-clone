@@ -13,6 +13,12 @@ export async function createNewDocument() {
     throw new Error("Email is missing in session claims.");
   }
 
+  if (!adminDb) {
+    throw new Error(
+      "Firebase Admin not initialized. Please check your environment variables."
+    );
+  }
+
   const docCollectionRef = adminDb.collection("documents");
   const docRef = await docCollectionRef.add({
     title: "New Doc",
@@ -36,6 +42,12 @@ export async function createNewDocument() {
 export async function deleteDocument(roomId: string) {
   await auth.protect();
 
+  if (!adminDb) {
+    throw new Error(
+      "Firebase Admin not initialized. Please check your environment variables."
+    );
+  }
+
   try {
     // delete the document refernce itself
     await adminDb.collection("documents").doc(roomId).delete();
@@ -47,7 +59,7 @@ export async function deleteDocument(roomId: string) {
     const batch = adminDb.batch();
 
     // delete the room reference in the user's collections for every user in the room
-    query.docs.forEach((doc) => {
+    query.docs.forEach((doc: any) => {
       batch.delete(doc.ref);
     });
 
@@ -71,6 +83,13 @@ export async function inviteUserToDocument(roomId: string, email: string) {
   //   throw new Error("Unauthorized access. Please log in.");
   // }
   await auth.protect();
+
+  if (!adminDb) {
+    throw new Error(
+      "Firebase Admin not initialized. Please check your environment variables."
+    );
+  }
+
   try {
     await adminDb
       .collection("users")
@@ -87,6 +106,13 @@ export async function inviteUserToDocument(roomId: string, email: string) {
 
 export const removeUserFromDocument = async (roomId: string, email: string) => {
   await auth.protect();
+
+  if (!adminDb) {
+    throw new Error(
+      "Firebase Admin not initialized. Please check your environment variables."
+    );
+  }
+
   try {
     await adminDb
       .collection("users")
