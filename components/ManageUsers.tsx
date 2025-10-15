@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { FormEvent, useState, useTransition } from "react";
+import { FormEvent, useState } from "react";
 import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
 import { inviteUserToDocument, removeUserFromDocument } from "@/action/action";
@@ -29,22 +29,25 @@ export default function ManageUsers() {
   const isOwner = useOwner();
 
   const [isOpen, setisOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const [usersInRoom] = useCollection(
     user && query(collectionGroup(db, "rooms"), where("roomId", "==", room.id))
   );
 
   const handleDelete = async (userId: string) => {
-    startTransition(async () => {
-      if(!user) return;
+    setIsPending(true);
+    try {
+      if (!user) return;
 
-      const {success} = await removeUserFromDocument(room.id, userId);
-      if(success) {
-        toast.success("User removed from room successfully!")
-      }else{
-        toast.error("Failed to remove user from room!")
+      const { success } = await removeUserFromDocument(room.id, userId);
+      if (success) {
+        toast.success("User removed from room successfully!");
+      } else {
+        toast.error("Failed to remove user from room!");
       }
-    })
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (

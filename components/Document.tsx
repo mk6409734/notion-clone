@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState, useTransition } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { doc, updateDoc } from "firebase/firestore";
@@ -16,7 +16,7 @@ import Avatars from "./Avatars";
 export default function Document({ id }: { id: string }) {
   const [data, loading, error] = useDocumentData(doc(db, "documents", id));
   const [input, setInput] = useState("");
-  const [isUpdating, startTransition] = useTransition();
+  const [isUpdating, setIsUpdating] = useState(false);
   const isOwner = useOwner();
   useEffect(() => {
     if (data) {
@@ -24,14 +24,17 @@ export default function Document({ id }: { id: string }) {
     }
   }, [data]);
 
-  const updateTitle = (e: FormEvent) => {
+  const updateTitle = async (e: FormEvent) => {
     e.preventDefault();
     if (input.trim()) {
-      startTransition(async () => {
+      setIsUpdating(true);
+      try {
         await updateDoc(doc(db, "documents", id), {
           title: input,
         });
-      });
+      } finally {
+        setIsUpdating(false);
+      }
     }
   };
 
@@ -67,7 +70,7 @@ export default function Document({ id }: { id: string }) {
       </div>
       <div className="flex max-w-6xl mx-auto justify-between items-center mb-5">
         <ManageUsers />
-        <Avatars/>
+        <Avatars />
       </div>
       <hr className="pb-10" />
       <Editor />

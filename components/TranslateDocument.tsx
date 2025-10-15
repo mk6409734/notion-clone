@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 
 import { Button } from "./ui/button";
-import { FormEvent, useState, useTransition } from "react";
+import { FormEvent, useState } from "react";
 import { BotIcon, Languages } from "lucide-react";
 import { toast } from "sonner";
 import Markdown from "react-markdown";
@@ -51,12 +51,13 @@ export default function TranslateDocument({ doc }: { doc: Y.Doc }) {
   const [language, setlanguage] = useState<string>("");
   const [summary, setsummary] = useState("");
   const [question, setquestion] = useState("");
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   const handleAskQuestion = async (e: FormEvent) => {
     e.preventDefault();
 
-    startTransition(async () => {
+    setIsPending(true);
+    try {
       const documentData = doc.get("document-store").toJSON();
 
       const res = await fetch(
@@ -76,11 +77,13 @@ export default function TranslateDocument({ doc }: { doc: Y.Doc }) {
       if (res.ok) {
         const { translated_text } = await res.json();
         console.log(translated_text);
-        
+
         setsummary(translated_text);
         toast.success("Translated Summary successfully!");
       }
-    });
+    } finally {
+      setIsPending(false);
+    }
   };
   return (
     <Dialog open={isopen} onOpenChange={setisOpen}>

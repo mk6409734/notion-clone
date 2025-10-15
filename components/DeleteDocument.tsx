@@ -26,15 +26,17 @@ export default function DeleteDocument() {
     const roomId = pathname.split("/").pop();
     if (!roomId) return;
 
-    startTransition(async () => {
-      const { success } = await deleteDocument(roomId);
-      if (success) {
-        setisOpen(false);
-        router.replace("/");
-        toast.success("Room Deleted successfully");
-      } else {
-        toast.error("Failed to delete room!");
-      }
+    startTransition(() => {
+      (async () => {
+        const { success } = await deleteDocument(roomId);
+        if (success) {
+          setisOpen(false);
+          router.replace("/");
+          toast.success("Room Deleted successfully");
+        } else {
+          toast.error("Failed to delete room!");
+        }
+      })();
     });
   };
 
